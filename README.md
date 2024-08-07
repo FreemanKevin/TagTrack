@@ -6,11 +6,10 @@ Automating Docker image monitoring, tracking versions and repository updates.
 The following software components are currently supported by TagTrack:
 
 - Elasticsearch
-- KKFileView
 - MinIO
 - Nacos
 - Nginx
-- RabbitMQ Server
+- RabbitMQ
 - Redis
 
 ## License
