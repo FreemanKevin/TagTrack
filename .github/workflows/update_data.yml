@@ -1,0 +1,36 @@
+name: Update Data
+
+on:
+  push:
+    branches:
+      - main  
+  schedule:
+    - cron: '0 3 * * *'  # Every day at 3am
+  workflow_dispatch:  
+
+jobs:
+  update_data:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3 
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: |
+        pip install requests packaging
+
+    - name: Run the script
+      run: python scripts/getVersion.py  
+
+    - name: Commit and push if there are changes
+      run: |
+        git config --local user.email "freemankevin2017@gmail.com"
+        git config --local user.name "FreemanKevin"
+        git add .
+        git commit -m "Update data" -a || echo "No changes to commit"
+        git push

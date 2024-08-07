@@ -1,0 +1,30 @@
+[
+    {
+        "name": "Elasticsearch",
+        "tag": "8.12.2"
+    },
+    {
+        "name": "GeoServer",
+        "tag": "2.25.3"
+    },
+    {
+        "name": "Minio",
+        "tag": "RELEASE.2024-08-03T04-33-23Z"
+    },
+    {
+        "name": "Nacos",
+        "tag": "v2.4.0.1"
+    },
+    {
+        "name": "Nginx",
+        "tag": "1.27.0"
+    },
+    {
+        "name": "RabbitMQ",
+        "tag": "3.13.6-management-alpine"
+    },
+    {
+        "name": "Redis",
+        "tag": "7.4.0"
+    }
+]
