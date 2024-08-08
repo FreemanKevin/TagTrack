@@ -23,12 +23,13 @@ def parse_version(version: str, format: str = "") -> datetime:
         return datetime.min
 
 def get_versions(data: List[Dict], service_name: str = "", ik_versions: List[str] = None) -> List[Dict]:
-    if service_name.lower() == "elasticsearch":
-        data = [d for d in data if any(ik_ver.replace('v', '') in d['version'] for ik_ver in ik_versions)]
-
-    if service_name.lower() == "nacos":
-        data = [d for d in data if "-slim" not in d['version']]
+    service_processing_rules = {
+        "elasticsearch": lambda x: any(ik_ver.replace('v', '') in x['version'] for ik_ver in ik_versions),
+        "nacos": lambda x: "-slim" not in x['version']
+    }
     
+    if service_name.lower() in service_processing_rules:
+        data = [d for d in data if service_processing_rules[service_name.lower()](d)]
     data = sorted(data, key=lambda x: parse_version(x['version']), reverse=True)
     
     if service_name.lower() == "nacos":
@@ -80,6 +81,17 @@ files_versions = get_github_files(base_url, repo_path, file_list)
 # 获取IK版本
 ik_versions = get_latest_ik_versions()
 
+# 服务名称与镜像名称映射
+image_mapping = {
+    "elasticsearch": "elasticsearch",
+    "geoserver": "oscarfonts/geoserver",
+    "minio": "minio/minio",
+    "nacos": "nacos/nacos-server",
+    "nginx": "nginx",
+    "rabbitmq": "rabbitmq",
+    "redis": "redis"
+}
+
 # 处理服务列表
 services = ["Elasticsearch", "GeoServer", "Minio", "Nacos", "Nginx", "RabbitMQ", "Redis"]
 latest_versions = []
@@ -88,16 +100,18 @@ penultimate_versions = []
 for service in services:
     file_key = f"{service.lower()}_versions.json" if service != "Nacos" else "nacos-server_versions.json"
     versions = get_versions(files_versions.get(file_key, []), service_name=service, ik_versions=ik_versions if service == "Elasticsearch" else None)
-    if len(versions) > 0:
-        latest_versions.append({'name': service, 'tag': versions[0]['version']})
-    if len(versions) > 1:
-        penultimate_versions.append({'name': service, 'tag': versions[1]['version']})
+    if versions:
+        service_name = image_mapping[service.lower()]
+        latest_versions.append({'name': service_name, 'tag': versions[0]['version']})
+        if len(versions) > 1:
+            penultimate_versions.append({'name': service_name, 'tag': versions[1]['version']})
 
 # 写入JSON文件
-data_directory = '../data'
-os.makedirs(data_directory, exist_ok=True) 
+data_directory = 'data'
+os.makedirs(data_directory, exist_ok=True)
 
 with open(os.path.join(data_directory, 'services_latest_versions.json'), 'w') as f:
     json.dump(latest_versions, f, indent=4)
+
 with open(os.path.join(data_directory, 'services_penultimate_versions.json'), 'w') as f:
     json.dump(penultimate_versions, f, indent=4)
